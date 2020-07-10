@@ -4,6 +4,7 @@ import './App.css';
 import TOC from './components/TOC';
 import ReadContent from './components/ReadContent';
 import CreateContent from './components/CreateContent';
+import UpdateContent from './components/UpdateContent';
 import Subject from './components/Subject';
 import Control from './components/Control';
 
@@ -25,26 +26,25 @@ class App extends Component{
       ]
     }
   }
-
-  render(){
+  getReadContent(){
+    var i = 0;
+    while(i < this.state.contents.length){
+      var data = this.state.contents[i];
+      if(data.id === this.state.selected_content_id){
+        return data;
+        break;
+      }
+      i = i + 1;
+    }
+  }
+  getContent(){
     console.log('App render');
     var _title, _desc,_article = null;
     if(this.state.mode === 'Welcome'){
-      _title = this.state.welcome.title;
-      _desc  = this.state.welcome.desc;
       _article = <ReadContent title={_title} desc={_desc}></ReadContent>
     }else if(this.state.mode === 'read'){
-      var i = 0;
-      while(i < this.state.contents.length){
-        var data = this.state.contents[i];
-        if(data.id === this.state.selected_content_id){
-          _title = data.title;
-          _desc = data.desc;
-          break;
-        }
-        i = i + 1;
-      }
-      _article = <ReadContent title={_title} desc={_desc}></ReadContent>
+      var _content = this.getReadContent();
+      _article = <ReadContent title={_content.title} desc={_content.desc}></ReadContent>
     }else if(this.state.mode === 'create'){
       _article = <CreateContent onSubmit = {function(_title,_desc){
         // add content to this.state.contents
@@ -59,7 +59,25 @@ class App extends Component{
           contents:_contents
         });
       }.bind(this)}></CreateContent>
+    }else if(this.state.mode === 'update'){
+      _article = <UpdateContent data = {_content}onSubmit = {function(_title,_desc){
+        // add content to this.state.contents
+        this.max_content_id = this.max_content_id+1;
+        // this.state.contents.push(
+        //   {id:this.max_content_id, title:_title, desc:_desc}
+        // );
+        var _contents = this.state.contents.concat(
+          {id:this.max_content_id, title:_title, desc:_desc}
+        );
+        this.setState({
+          contents:_contents
+        });
+      }.bind(this)}></UpdateContent>
     }
+    return _article;
+  }
+  render(){
+    
     return (
       <div className="App">
         <Subject title = {this.state.subject.title} 
@@ -80,7 +98,7 @@ class App extends Component{
             mode:_mode
           });
         }.bind(this)}></Control>
-        {_article}
+        {this.getContent()}
       </div>
     );
 }
